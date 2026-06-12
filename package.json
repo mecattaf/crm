@@ -1,0 +1,35 @@
+{
+  "name": "crm",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "wrangler types && tsc --noEmit -p tsconfig.worker.json && tsc --noEmit -p tsconfig.client.json && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "agents": "^0.9",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12",
+    "react": "^19",
+    "react-dom": "^19",
+    "zod": "^4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.40.2",
+    "@cloudflare/vitest-pool-workers": "^0.16.15",
+    "@cloudflare/workers-types": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.2",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "~5.9",
+    "vite": "^7",
+    "vitest": "^4.1",
+    "wrangler": "^4.79"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  // Solution-style root config (editor entry point). Typechecking runs per
+  // project: see the `check` npm script.
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.worker.json" },
+    { "path": "./tsconfig.client.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
