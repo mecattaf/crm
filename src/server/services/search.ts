@@ -203,18 +203,19 @@ function referencesArchived(filters: Filter[]): boolean {
   );
 }
 
-export async function searchRecords(
-  db: Db,
-  input: SearchRecordsInput,
-  _actor?: Actor,
-): Promise<SearchRecordsResult> {
-  const { entity } = input;
+/**
+ * Compile a filter list (the search_records grammar) into SQL conditions,
+ * including the default archived-records exclusion. Shared by searchRecords
+ * and aggregate so both surfaces speak the exact same filter language.
+ */
+export function compileFilters(
+  entity: EntityName,
+  filters: Filter[],
+  opts: { now?: string; include_archived?: boolean } = {},
+): SQL[] {
   const def = entityDef(entity);
-  const nowStamp = nowIso(input.now);
+  const nowStamp = nowIso(opts.now);
   const today = nowStamp.slice(0, 10);
-  const limit = Math.min(Math.max(input.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT);
-  const filters = input.filters ?? [];
-
   const conds: SQL[] = [];
 
   for (const f of filters) {
@@ -226,6 +227,27 @@ export async function searchRecords(
     }
   }
 
+  if (!opts.include_archived && !referencesArchived(filters)) {
+    conds.push(isNull(fieldDef(def, entity, "archived_at").column));
+  }
+  return conds;
+}
+
+export async function searchRecords(
+  db: Db,
+  input: SearchRecordsInput,
+  _actor?: Actor,
+): Promise<SearchRecordsResult> {
+  const { entity } = input;
+  const def = entityDef(entity);
+  const limit = Math.min(Math.max(input.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT);
+  const filters = input.filters ?? [];
+
+  const conds: SQL[] = compileFilters(entity, filters, {
+    ...(input.now !== undefined ? { now: input.now } : {}),
+    ...(input.include_archived !== undefined ? { include_archived: input.include_archived } : {}),
+  });
+
   if (input.query) {
     const q = normalizeText(input.query);
     if (q.length > 0) {
@@ -235,11 +257,6 @@ export async function searchRecords(
       ];
       conds.push(or(...matchers) as SQL);
     }
-  }
-
-  const archivedCol = fieldDef(def, entity, "archived_at").column;
-  if (!input.include_archived && !referencesArchived(filters)) {
-    conds.push(isNull(archivedCol));
   }
 
   // sort + keyset cursor (id tiebreak keeps pagination stable under any sort)
