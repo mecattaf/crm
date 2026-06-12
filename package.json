@@ -11,6 +11,7 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^0.8.0",
     "agents": "^0.9",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12",
