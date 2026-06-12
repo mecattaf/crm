@@ -1,0 +1,37 @@
+# Deploy to Cloudflare (Sodimo account a052167170fcfdaa036b64cff532c9db).
+#
+# BLOCKED until repo secrets exist (TASK-149: mint `sodimo-pilot-all` token, then):
+#   gh secret set CLOUDFLARE_API_TOKEN
+#   gh secret set CLOUDFLARE_ACCOUNT_ID
+#
+# One-time resource creation (run with the token, e.g. from sodimo@sodimo):
+#   wrangler kv namespace create OAUTH_KV        # put id in wrangler.jsonc kv_namespaces
+#   wrangler d1 create crm                       # put database_id in wrangler.jsonc d1_databases
+# Then trigger this workflow manually (workflow_dispatch) or push to main.
+name: deploy
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - name: D1 migrations (separate step so failures are attributable)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply crm --remote
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
