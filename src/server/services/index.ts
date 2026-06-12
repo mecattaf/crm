@@ -51,6 +51,14 @@ export type {
 export { compileFilters } from "./search";
 export type { Actor, EntityName, ServiceRecord } from "./types";
 export { ENTITIES } from "./types";
+export { getWorkspace } from "./workspace";
+export type {
+  WorkspaceCurrency,
+  WorkspacePipeline,
+  WorkspaceResult,
+  WorkspaceStage,
+  WorkspaceUser,
+} from "./workspace";
 export {
   myDay,
   noNextActivity,
