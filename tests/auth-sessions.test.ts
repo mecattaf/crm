@@ -207,11 +207,11 @@ describe("API guard coverage", () => {
     expect((await res.json()) as object).toEqual({ error: "unauthenticated" });
   });
 
-  it("the same route passes the guard with a cookie (404 — no handler yet)", async () => {
+  it("the same route passes the guard with a cookie", async () => {
     const token = await loginAdmin();
     const res = await SELF.fetch(`${BASE}/api/organizations`, {
       headers: { Cookie: `crm_session=${token}` },
     });
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(200);
   });
 });
